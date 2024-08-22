@@ -6,7 +6,7 @@ This function:
 - Get completion (concurrently for higher speed) by calling OpenAI API
 - Return the CSV translated
 
-![workflow.png](workflow.png){ width: 400px; }
+![workflow.png](workflow.png){ width: 200px; }
 
 ## Deploy this function
 
