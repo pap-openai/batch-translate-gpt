@@ -1,4 +1,4 @@
-# GPT Action - Batch translation with OpenAI
+# GPT Action - Batch translation with OpenAI Chat API
 
 This function:
 - Downloads CSVs following [ChatGPT's Actions file format ](https://platform.openai.com/docs/actions/sending-files)
