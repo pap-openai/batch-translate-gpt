@@ -1,0 +1,22 @@
+{
+  "name": "batch-translate-gpt",
+  "version": "1.0.0",
+  "description": "A simple middleware for translating CSV files using OpenAI API.",
+  "main": "index.js",
+  "engines": {
+    "node": "14.x"
+  },
+  "dependencies": {
+    "csv-parser": "^3.0.0",
+    "csv-writer": "^1.6.0",
+    "openai": "^4.56.0",
+    "p-limit": "^6.1.0"
+  },
+  "devDependencies": {
+    "@google-cloud/functions-framework": "^3.4.2"
+  },
+  "scripts": {
+    "start": "functions-framework --target=translateHandler"
+  },
+  "type": "module"
+}
