@@ -1,3 +1,4 @@
 env.yml
 node_modules/
 payload.json
+.DS_Store

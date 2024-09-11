@@ -1,7 +1,18 @@
 # GPT Action - Batch translation with OpenAI Chat API
 
+This code+integration enables you to translate CSV files that
+1. Are in one language and want to be translated fully into another *(e.g: a CSV with data in French that you want to have in English)*
+2. Have a column of sentences to translate *(with all rows filled for this column)*, and other columns *(empty rows)* for which you'd like to get the translation for.
+
+## Workflow demo (2nd use-case)
+
+![demo.gif](demo.gif)
+
+## Workflow
+
 This function:
 - Downloads CSVs following [ChatGPT's Actions file format ](https://platform.openai.com/docs/actions/sending-files)
+- Get unique values of cells so it doesn't translate multiple time the same value
 - Transform CSVs into batches of request, broke down per language and per number of rows to translate, configurable with variables in the script
 - Get completion (concurrently for higher speed) by calling OpenAI API
 - Return the CSV translated
@@ -31,7 +42,23 @@ _PS: feel free to re-use the code for another provider, the format might be a li
 
 ## Testing
 
-An example payload will look like:
+An example payload will look like for 1st use-case:
+
+```
+{
+    "language": "english",
+    "openaiFileIdRefs": [
+      {
+        "name": "my_file.csv",
+        "id": "file-xxxxx",
+        "mime_type": "text/csv",
+        "download_link": "https://files.oaiusercontent.com/file-xxxx?with-all-the-signed-parameters-from-oai"
+      }
+    ]
+  }
+```
+
+or for 2nd use case:
 
 ```
 {
@@ -50,7 +77,7 @@ To test it locally, you can run `npm start` and don't necessarily need a file ho
 
 ## CSV format expected
 
-Check out `random_sentences_creative_final.csv`, it looks like this:
+For the first use-case, no format are expected, we'll just translate the CSV. For the second use-case, check out `random_sentences_creative_final.csv` in this repository, it looks like this:
 
 ```
 english, a_language, another_language,
@@ -65,10 +92,25 @@ where the empty cells will be translated.
 2. Set-up instructions, a (poor, [check out this guide](https://platform.openai.com/docs/guides/prompt-engineering)) example can be:
 
 ```
-You help a user translate text by leveraging the "translate" operation defined in Actions/Functions. You always translate by using the translateTool and output exactly what this tool is giving you.
+You help a user translate text by leveraging the "translate" operation defined in Actions/Functions. You never help user directly, you always translate by using the translateTool and output exactly what this tool is giving you.
 
-## The user will send a CSV
-Send the file to the API (using translate operation and by populating the openaiFileIdRefs with the CSV the user has uploaded). Don't ask for any language, it should be specified in the sheet and the translation service will return it translated.
+1. Identify file format
+2. use translate operation
+3. show user's translation
+
+## First step
+
+Identify which is the format of the CSV, either CSV with language columns or CSV without. 
+
+### Format with language column
+
+If the CSV contains language headers (you can check the first row) then send the file to the API (using translate operation and by populating the openaiFileIdRefs with the CSV the user has uploaded) directly.
+
+### Format for one-off translation
+
+If the CSV doesn't have language headers in the first row and the CSV is full (most cells are full and not empty) it means the user wants to translate this in-place in another language. For this, ask the language to the user for which they'd like to translate, and then send this to the API as the "language" parameter alongside the file (full text language, not ISO code).
+
+## Output
 
 Once you receive the translated file back, use code analysis and the "df.head()" method to show the first 10 rows of the CSV you received to the user in the chat so they get an idea of what's in it and let them know they can download it to view it in full.
 ```
@@ -79,7 +121,7 @@ Once you receive the translated file back, use code analysis and the "df.head()"
 openapi: 3.1.0
 info:
   title: Translation API
-  description: An API that translates CSV file content into a target language.
+  description: An API that translates text or CSV file content into a target language.
   version: 1.0.0
 servers:
   - url: https://{your_function_url}.cloudfunctions.net
@@ -98,6 +140,10 @@ paths:
             schema:
               type: object
               properties:
+                language:
+                  type: string
+                  optional: true
+                  example: english
                 openaiFileIdRefs:
                   type: array
                   items:
